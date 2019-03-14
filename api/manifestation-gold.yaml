@@ -1,0 +1,22 @@
+apiVersion: config.istio.io/v1alpha2
+kind: APIManifestation
+metadata:
+  name: helloworld-gold
+spec:
+  gateways:
+  - helloworld-gateway
+  hosts:
+  - api.helloworld.com
+  apiDefinitions: 
+  - helloworld
+  operations:
+    SayHello:
+      allow:
+        issuer: helloworld.com
+        scopes: [ "helloworld:gold" ]
+      policies:
+        inject-api-header:
+        developer-quota:
+      destination:
+        host: httbin.com
+        path: /headers

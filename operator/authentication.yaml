@@ -1,0 +1,16 @@
+apiVersion: "authentication.istio.io/v1alpha1"
+kind: Policy
+metadata:
+  name: authentication
+  namespace: default
+spec:
+  targets:
+  - name: istio-ingressgateway
+  - name: helloworld
+  origins:
+  - jwt:
+      issuer: https://theganyo1-eval-test.apigee.net/istio-auth/token
+      jwks_uri: https://theganyo1-eval-test.apigee.net/istio-auth/certs
+  originIsOptional: false
+  # originIsOptional: true
+  principalBinding: USE_ORIGIN

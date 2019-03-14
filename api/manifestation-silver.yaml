@@ -1,0 +1,21 @@
+apiVersion: config.istio.io/v1alpha2
+kind: APIManifestation
+metadata:
+  name: helloworld-silver
+spec:
+  gateways:
+  - helloworld-gateway
+  hosts:
+  - api.helloworld.com
+  apiDefinitions: 
+  - helloworld
+  operations:
+    SayHello:
+      allow:
+        issuer: helloworld.com
+      policies:
+        inject-api-header:
+        developer-quota:
+      destination:
+        host: helloworld-vs.default.svc.cluster.local
+        path: /hello

@@ -1,0 +1,13 @@
+apiVersion: config.istio.io/v1alpha2
+kind: rule
+metadata:
+  name: inject-response-header
+spec:
+  match: api.definition == "helloworld" && 
+         api.manifestation == "helloworld-gold" && 
+         api.operation == "SayHello"
+  actions:
+  responseHeaderOperations:
+  - name: x-api-response
+    values:
+    - '"true"'

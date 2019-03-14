@@ -1,0 +1,52 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: api-classification
+spec:
+  filters:
+  - listenerMatch:
+      listenerProtocol: HTTP
+    insertPosition:
+      index: BEFORE
+      relativeTo: mixer
+    filterName: envoy.lua
+    filterType: HTTP
+    filterConfig:
+      inlineCode: |
+          -- api-classification --
+            
+          local jwtHeaderName = "Authorization"
+          
+          function envoy_on_request(request_handle)
+          
+            headers = request_handle:headers()            
+            authority = headers:get(":authority")
+            path = headers:get(":path")
+            iss = headers:get(jwtHeaderName.."-Iss")
+            scopes = headers:get(jwtHeaderName.."-Scopes")
+          
+            if  authority == "api.helloworld.com"
+            and path == "/hello"
+            and iss       == "https://theganyo1-eval-test.apigee.net/istio-auth/token" then
+            
+              if  scopes ~= nil and scopes:find("helloworld:gold") then
+            
+                -- GOLD
+                headers:replace("api.definition", "helloworld")
+                headers:replace("api.manifestation", "helloworld-gold")
+                headers:replace("api.operation", "SayHello")
+
+              else
+              
+                -- SILVER
+                headers:replace("api.definition", "helloworld")
+                headers:replace("api.manifestation", "helloworld-silver")
+                headers:replace("api.operation", "SayHello")              
+              end
+              
+              request_handle:logCritical("api.definition   : "..headers:get("api.definition"))
+              request_handle:logCritical("api.manifestation: "..headers:get("api.manifestation"))
+              request_handle:logCritical("api.operation    : "..headers:get("api.operation"))
+              
+            end            
+          end

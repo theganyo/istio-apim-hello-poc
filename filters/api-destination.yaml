@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: api-destination
+spec:
+  filters:
+  - listenerMatch:
+      listenerProtocol: HTTP
+    insertPosition:
+      index: BEFORE
+      relativeTo: envoy.router
+    filterName: envoy.lua
+    filterType: HTTP
+    filterConfig:
+      inlineCode: |
+          -- api-destination --
+            
+          function envoy_on_request(request_handle)
+            headers = request_handle:headers()
+            
+            definition = headers:get("api.definition")
+            manifestation = headers:get("api.manifestation")
+            operation = headers:get("api.operation")
+            
+            -- SILVER
+            if  definition    == "helloworld" 
+            and manifestation == "helloworld-silver" 
+            and operation     == "SayHello" then
+
+               -- must be fully qualified
+               headers:replace(":authority", "helloworld-vs.default.svc.cluster.local")
+               headers:replace(":path", "/hello")
+            end
+
+            -- GOLD
+            if  definition    == "helloworld" 
+            and manifestation == "helloworld-gold" 
+            and operation     == "SayHello" then
+            
+               headers:replace(":authority", "httpbin.com")
+               headers:replace(":path", "/headers")
+            end
+
+            request_handle:logCritical("set :authority: "..headers:get(":authority"))
+            request_handle:logCritical("set :path     : "..headers:get(":path"))
+          end

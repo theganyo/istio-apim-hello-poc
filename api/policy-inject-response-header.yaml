@@ -1,0 +1,11 @@
+apiVersion: config.istio.io/v1alpha2
+kind: rule
+metadata:
+  name: inject-response-header
+spec:
+  match: 
+  actions:
+  responseHeaderOperations:
+  - name: x-api-response
+    values:
+    - '"true"'
