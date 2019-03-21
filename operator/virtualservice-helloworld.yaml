@@ -7,7 +7,7 @@ spec:
   - helloworld-gateway
   - mesh
   hosts:
-  - helloworld-vs   # helloworld-vs.default.svc.cluster.local
+  - helloworld.vs
   http:
   - match:
     - uri:

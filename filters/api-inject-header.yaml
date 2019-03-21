@@ -14,12 +14,13 @@ spec:
     filterType: HTTP
     filterConfig:
       inlineCode: |
-          -- api-inject-header --
-            
-          function envoy_on_response(request_handle)
+        -- api-inject-header --
           
-            headers = request_handle:headers()
-            headers:replace("x-api-response", "true")
-            
-            -- request_handle:logCritical("inject header")
-          end
+        function envoy_on_response(request_handle)
+        
+          headers = request_handle:headers()
+          headers:replace("x-api-response", "true")
+          
+          -- request_handle:logCritical("inject header")
+        end
+        -- api-inject-header --

@@ -11,7 +11,7 @@ spec:
     # cannot use simple local hostnames - must be fully qualified
     - httpbin.com
     - api.helloworld.com
-    - helloworld-vs.default.svc.cluster.local
+    - helloworld.vs
     port:
       name: http
       number: 80

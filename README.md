@@ -17,8 +17,9 @@
 ## access virtualservices via gateway
 
     curl -i -H host:httpbin.com 0/headers
+    curl -i -H host:helloworld.vs 0/hello
 
-    curl -i -H host:helloworld-vs.default.svc.cluster.local 0/hello
+    curl -i -H host:api.helloworld.com 0/hello
 
 ## access api via gateway (fails)
 

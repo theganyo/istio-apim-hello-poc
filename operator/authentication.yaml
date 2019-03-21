@@ -7,6 +7,7 @@ spec:
   targets:
   - name: istio-ingressgateway
   - name: helloworld
+  - name: httpbin
   origins:
   - jwt:
       issuer: https://theganyo1-eval-test.apigee.net/istio-auth/token

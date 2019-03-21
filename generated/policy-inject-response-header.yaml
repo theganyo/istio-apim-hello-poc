@@ -4,8 +4,8 @@ metadata:
   name: inject-response-header
 spec:
   match: api.definition == "helloworld" && 
-         api.manifestation == "helloworld-gold" && 
-         api.operation == "SayHello"
+         api.gateway    == "helloworld-gold" && 
+         api.operation  == "SayHello"
   actions:
   responseHeaderOperations:
   - name: x-api-response

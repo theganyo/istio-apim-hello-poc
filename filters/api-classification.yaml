@@ -13,40 +13,68 @@ spec:
     filterType: HTTP
     filterConfig:
       inlineCode: |
-          -- api-classification --
-            
-          local jwtHeaderName = "Authorization"
-          
-          function envoy_on_request(request_handle)
-          
-            headers = request_handle:headers()            
-            authority = headers:get(":authority")
-            path = headers:get(":path")
-            iss = headers:get(jwtHeaderName.."-Iss")
-            scopes = headers:get(jwtHeaderName.."-Scopes")
-          
-            if  authority == "api.helloworld.com"
-            and path == "/hello"
-            and iss       == "https://theganyo1-eval-test.apigee.net/istio-auth/token" then
-            
-              if  scopes ~= nil and scopes:find("helloworld:gold") then
-            
-                -- GOLD
-                headers:replace("api.definition", "helloworld")
-                headers:replace("api.manifestation", "helloworld-gold")
-                headers:replace("api.operation", "SayHello")
+        -- api-classification --
+        
+        local host = "api.helloworld.com"
+        local issuer = "https://theganyo1-eval-test.apigee.net/istio-auth/token"
 
-              else
-              
-                -- SILVER
-                headers:replace("api.definition", "helloworld")
-                headers:replace("api.manifestation", "helloworld-silver")
-                headers:replace("api.operation", "SayHello")              
+        local classifications = { 
+          -- {authority, path, claims, definition, operation, gateway}
+          {host, "/hello", {iss=issuer, scopes="helloworld:gold"}, "helloworld", "SayHello", "helloworld-gold"},
+          {host, "/hello", {iss=issuer                          }, "helloworld", "SayHello", "helloworld-silver"}
+        }
+        
+        local jwtHeaderName = "Authorization"
+        local jwtHeaderPrefix = jwtHeaderName.."-"
+        
+        function claim(name, request_handle)
+          claimName = jwtHeaderPrefix..name
+          headers = request_handle:headers() 
+          return headers:get(claimName)
+        end
+
+        function matchClaim(name, check, request_handle)
+          value = claim(name, request_handle)
+          -- todo: make this properly work with arrays for value
+          return value ~= nil and (value==check or value:find(check))
+        end
+
+        function classify(request_handle)
+        
+          headers = request_handle:headers()
+          authority = headers:get(":authority")
+          path = headers:get(":path")
+        
+          for k, class in pairs(classifications) do
+            if authority == class[1] and path == class[2] then
+              matched = true
+              for k, v in pairs(class[3]) do -- claims
+                if not matchClaim(k, v, request_handle) then
+                  matched = false
+                  break
+                end
               end
-              
-              request_handle:logCritical("api.definition   : "..headers:get("api.definition"))
-              request_handle:logCritical("api.manifestation: "..headers:get("api.manifestation"))
-              request_handle:logCritical("api.operation    : "..headers:get("api.operation"))
-              
-            end            
+              if matched then
+                return class
+              end
+            end
           end
+          return nil
+        end
+
+        function envoy_on_request(request_handle)
+        
+          headers = request_handle:headers()
+          
+          class = classify(request_handle)
+          if class ~= nil then
+            headers:replace("api.definition", class[4])
+            headers:replace("api.operation", class[5])
+            headers:replace("api.gateway", class[6])
+            
+            request_handle:logCritical("api.definition: "..headers:get("api.definition"))
+            request_handle:logCritical("api.gateway   : "..headers:get("api.gateway"))
+            request_handle:logCritical("api.operation : "..headers:get("api.operation"))              
+          end
+        end
+        -- api-classification --
