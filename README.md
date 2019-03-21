@@ -29,18 +29,20 @@
 
     kubectl apply -f operator/authentication.yaml
 
-## apply manifestation
+## apply api gateway
 
     kubectl apply -f generated/virtualservice-api-helloworld-com.yaml
     kubectl apply -f filters/_claims-to-headers.yaml
     kubectl apply -f filters/api-classification.yaml
     kubectl apply -f filters/api-destination.yaml
 
+    curl -i -H host:httpbin.com 0/headers
+
+    curl -i -H host:helloworld.vs 0/hello
+
     curl -i -H host:api.helloworld.com 0/hello
 
-    curl -i -H host:helloworld-vs.default.svc.cluster.local 0/hello
-
-## gateway
+## access via gateway
 
     SILVER=`apigee-istio -o theganyo1-eval -e test token create -i 8B0pYeAZbC30xB1MJDEHup9YDWOV6y9A -s NJSzhph9QCZGIHt0`
     apigee-istio -o theganyo1-eval -e test token inspect <<< ${SILVER}
@@ -52,7 +54,13 @@
   
     curl -i -H host:api.helloworld.com 0/hello -H "Authorization: Bearer ${GOLD}"
 
-## intra-mesh
+## policy
+
+    kubectl apply -f generated/policy-inject-response.yaml
+
+    curl -i -H host:api.helloworld.com 0/hello
+
+## access inside of mesh
 
     kubectl apply -f $ISTIO/samples/sleep/sleep.yaml
   

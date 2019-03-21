@@ -3,11 +3,13 @@ kind: rule
 metadata:
   name: inject-response-header
 spec:
-  match: api.definition == "helloworld" && 
-         api.gateway    == "helloworld-gold" && 
-         api.operation  == "SayHello"
+  # this would be using attributes intead of headers in the real world
+  match: request.headers["api.definition"] == "helloworld" && 
+         request.headers["api.gateway"]    == "helloworld-gold" && 
+         request.headers["api.operation"]  == "SayHello"
   actions:
   responseHeaderOperations:
   - name: x-api-response
     values:
     - '"true"'
+ 
