@@ -3,7 +3,7 @@ kind: rule
 metadata:
   name: inject-response-header
 spec:
-  match: 
+  match: "api"
   actions:
   responseHeaderOperations:
   - name: x-api-response
