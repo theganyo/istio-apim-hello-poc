@@ -1,0 +1,16 @@
+openapi: 3.0.0
+info:
+ title: Helloworld
+ version: 1.0.0
+servers:
+- url: http://helloworld.com
+paths:
+ /hello:
+   get:
+     operationId: SayHello
+     responses:
+       default:
+         content:
+           text/html:
+             schema:
+               type: string
